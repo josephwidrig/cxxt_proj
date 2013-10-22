@@ -2,19 +2,21 @@
 
 Function moveZipFile()
 {
-    move item C:\Users\Joseph\Downloads\cxxtest-4.3.zip ~cxxt_proj
+    Move-Item C:\Users\Joseph\Downloads\cxxtest-4.3.zip C:\Users\Joseph\cxxt_proj\CxxTest
 }
 
-Function unzipCxxTest()
+
+#TO ADD: ask whether CxxTest dir exists and then decide whether to do this function
+Function createUnzipDirectory()
 {
     #move to working directory (can be changed)
     cd C:\Users\Joseph\cxxt_proj
     dir
     mkdir CxxTest
-    [System.IO.Compression.ZipFile]::ExtractToDirectory('~\cxxt_proj\cxxtest-4.3.zip', '~\cxxt_proj\CxxTest')
+    #[System.IO.Compression.ZipFile]::ExtractToDirectory('~\cxxt_proj\cxxtest-4.3.zip', '~\cxxt_proj\CxxTest')
 }
 
-#unzipCxxTest
+
 
 Function maybeUnzip()
 {
@@ -32,7 +34,7 @@ Function maybeUnzip()
     $ZipFiles.count | out-default
     #define $zipfolder ???
     $ZipFolder=$cxxtestdir
-foreach ($ZipFile in $ZipFiles)
+    foreach ($ZipFile in $ZipFiles)
     {
         $ZipFile.fullname | out-default
         $ZipFolder = $shell.namespace($ZipFile.fullname)
@@ -43,4 +45,7 @@ foreach ($ZipFile in $ZipFiles)
     }
 }
 
+createUnzipDirectory
+moveZipFile
 maybeUnzip
+#at this point all zip files have been extracted in the CxxTest folder

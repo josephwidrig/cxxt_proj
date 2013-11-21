@@ -5,16 +5,20 @@
 
 Function moveZipFile()
 {
-    #eventually make this version-flexible
-    if( (Test-Path ~\Downloads\cxxtest-4.3.zip -PathType leaf) )
+
+    Get-FileName -initialDirectory "~\Downloads"
+    echo "Checking for existance of cxxtest zip file in download"
+    if( (Test-Path ~\Downloads\cxxtest-4.3.zip -PathType Leaf ) )
     {
-    Move-Item ~\Downloads\cxxtest-4.3.zip ~\cxxt_proj\CxxTest
+        echo "moving zip file."
+        move-item ~\Downloads\cxxtest-4.3.zip ~\cxxt_proj\CxxTest
     }
     else
     {
-        Write-Error "cxxtest-4.3.zip not found"   
+        Write-Error "Missing CxxTest Zip file"
     }
 }
+
 
 
 #TO ADD: ask whether CxxTest dir exists and then decide whether to do this function
@@ -33,6 +37,26 @@ Function createUnzipDirectory()
     }
     #[System.IO.Compression.ZipFile]::ExtractToDirectory('~\cxxt_proj\cxxtest-4.3.zip', '~\cxxt_proj\CxxTest')
 }
+
+Function Get-FileName($initialDirectory)
+{  
+ [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") |
+ Out-Null
+ [System.Reflection.Assembly]::LoadWithPartialName("System.Environment") | Out-Null
+ 
+ $downloads = New-Object [Environment]::GetFolderPath -"~\Downloads"
+ 
+ $initialDirectory = $downloads
+
+ write-output $initialDirectory
+
+ $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+ $OpenFileDialog.InitialDirectory = $downloads
+ $OpenFileDialog.filter = "All files (*.*)| *.*"
+ $OpenFileDialog.ShowDialog() | Out-Null
+ $OpenFileDialog.filename
+} #end function Get-FileName
+
 
 
 #changed from maybeUnzip
@@ -69,6 +93,11 @@ createUnzipDirectory
 moveZipFile
 unzip
 #at this point all zip files have been extracted in the CxxTest folder - 10/21/13
+
+Function moveUnzippedFiles()
+{
+    
+}
 
 #~\cxxt_proj\CxxTest\cxxtest-4.3   [\cxxtest] <--- must be moved to C:\Program Files (x86)\MSVS 11.0\VC\include
 #                                                                or C:\Program Files\Microsoft SDKs\Windows\v*.*\Include\cxxtest

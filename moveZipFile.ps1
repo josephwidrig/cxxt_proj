@@ -9,16 +9,16 @@ Function moveZipFile()
     $location = Get-FileName #-initialDirectory "~\Downloads"
     write $location
     echo "Checking for existance of cxxtest zip file in download"
-    if( ($location -ieq "Cancel" ) )
+    if( ($location -ne "Cancel" ) )
     {
         echo "moving zip file."
-        move-item ~\Downloads\cxxtest-4.3.zip ~\cxxt_proj\CxxTest
-        return true
+        move-item ~\Downloads\cxxtest-4.3.zip ~\cxx_test\CxxTest
+        return $TRUE
     }
     else
     {
         Write-Error "Missing CxxTest Zip file"
-        return false
+        return $FALSE
     }
 }
 
@@ -110,8 +110,10 @@ Function unzip()
 
 Function undoCreateUnzipDirectory
 {
-    cd ~\cxx_test\CxxTest #move into working directory
-    del *.*
+    cd ~\cxx_test #move into working directory
+    del -r *
+    cd ..
+    Remove-item cxx_test
 
 }
 
@@ -119,8 +121,11 @@ createUnzipDirectory
 if ( moveZipFile )
 { 
     unzip
+    #move files to correct location
+         #include dir to include location
+         #rest of files to home directory
 }
-undoCredateUnzipDirectory
+#undoCredateUnzipDirectory
 #at this point all zip files have been extracted in the CxxTest folder - 10/21/13
 
 Function moveUnzippedFiles()

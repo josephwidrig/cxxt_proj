@@ -12,7 +12,7 @@ Function moveZipFile()
     if( ($location -ne "Cancel" ) )
     {
         echo "moving zip file."
-        move-item ~\Downloads\cxxtest-4.3.zip ~\cxx_test\CxxTest
+        move-item $location.filename ~\cxx_test\CxxTest
         return $TRUE
     }
     else
@@ -29,7 +29,7 @@ Function createUnzipDirectory()
 {
     #$workingDir = "~\cxx_test"
     cd ~
-    if(!(Test-Path .\cxx_test -PathType Container) ) #test to see if cxxt_proj already exists
+    if(!(Test-Path .\cxx_test -PathType Container) ) #test to see if cxxt_proj -> cxx_test already exists
     {
         mkdir cxx_test
     }
@@ -117,21 +117,36 @@ Function undoCreateUnzipDirectory
 
 }
 
+Function moveUnzippedFiles()
+{
+    if(!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' -PathType Container) ) #test to see if 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' already exists
+    {
+        echo "cxxtest Directory not found in VS11.0, making directory"
+        New-Item 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' -ItemType Directory
+    }
+    echo "Copying items to new directory"
+    Copy-Item cxxtest-4.3\cxxtest\* 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest'
+    if(!(Test-Path ~\cxxtest -PathType Container) ) #test to see if 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' already exists
+    {
+        New-Item ~\cxxtest -ItemType Directory
+    }
+    Copy-Item cxxtest-4.3 ~\cxxtest -Recurse
+}
+
+#MAIN
 createUnzipDirectory
 if ( moveZipFile )
 { 
     unzip
+    moveUnzippedFiles
     #move files to correct location
          #include dir to include location
          #rest of files to home directory
 }
-#undoCredateUnzipDirectory
+undoCredateUnzipDirectory
 #at this point all zip files have been extracted in the CxxTest folder - 10/21/13
 
-Function moveUnzippedFiles()
-{
-    
-}
+
 
 #~\cxxt_proj\CxxTest\cxxtest-4.3   [\cxxtest] <--- must be moved to C:\Program Files (x86)\MSVS 11.0\VC\include
 #                                                                or C:\Program Files\Microsoft SDKs\Windows\v*.*\Include\cxxtest

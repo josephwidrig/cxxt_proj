@@ -119,10 +119,37 @@ Function undoCreateUnzipDirectory
 
 Function moveUnzippedFiles()
 {
-    if(!(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' -PathType Container) ) #test to see if 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' already exists
+    $Stem = 'C:\Program Files (x86)'
+    $Directories = Get-ChildItem $Stem -Filter 'Microsoft Visual Studio*' -Name
+    $DirectoryCount= (Get-ChildItem $Stem -Filter 'Microsoft Visual Studio*').Count
+    Sort-Object $Directories
+    echo $Directories
+    $cxxdir = '\VC\include\cxxtest'
+    $fullpath = $Directories[0]
+    if( $DirectoryCount -gt 1 ) #prompt user
     {
-        echo "cxxtest Directory not found in VS11.0, making directory"
-        New-Item 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' -ItemType Directory
+        echo "Multiple MSVS Versions detected."
+        
+        echo $fullpath
+        $i = 1
+        foreach( $Directory in $Directories )
+        {
+            echo $i
+            echo ": "
+            echo $Directory
+            $i++
+        }
+    $which = Read-Host "Enter the number corresponding to the version you would like to use."
+    $fullpath = $dirs[$which-1]
+    }
+    $fullpath = $Stem + $fullpath + $cxxdir
+    echo $fullpath
+
+    #change to reflect choice by $fullpath
+    if(!(Test-Path $fullpath -PathType Container) ) #test to see if 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' already exists
+    {
+        echo "cxxtest Directory not found in Visual Studio, making directory"
+        New-Item $fullpath -ItemType Directory
     }
     echo "Copying items to new directory"
     Copy-Item cxxtest-4.3\cxxtest\* 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest'
@@ -153,3 +180,5 @@ undoCredateUnzipDirectory
 #  <using microsoft
 #  investigate cygwin and mingw
 # ADD IN echo(s) OR Write-(s)
+
+# 1/7/14 - This program must be run in a 'run as administrator' powershell window.

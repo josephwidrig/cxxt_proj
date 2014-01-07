@@ -119,7 +119,7 @@ Function undoCreateUnzipDirectory
 
 Function moveUnzippedFiles()
 {
-    $Stem = 'C:\Program Files (x86)'
+    $Stem = 'C:\Program Files (x86)\'
     $Directories = Get-ChildItem $Stem -Filter 'Microsoft Visual Studio*' -Name
     $DirectoryCount= (Get-ChildItem $Stem -Filter 'Microsoft Visual Studio*').Count
     Sort-Object $Directories
@@ -134,13 +134,15 @@ Function moveUnzippedFiles()
         $i = 1
         foreach( $Directory in $Directories )
         {
-            echo $i
-            echo ": "
-            echo $Directory
+            Write $i": "$Directory
             $i++
         }
-    $which = Read-Host "Enter the number corresponding to the version you would like to use."
-    $fullpath = $dirs[$which-1]
+        $which = $DirectoryCount+1
+        while (!($which-1 -lt $DirectoryCount -and $which-1 -ge 0))
+        {
+        $which = Read-Host "Enter the number corresponding to the version you would like to use."
+        }
+        $fullpath = $directories[$which-1]
     }
     $fullpath = $Stem + $fullpath + $cxxdir
     echo $fullpath
@@ -170,7 +172,7 @@ if ( moveZipFile )
          #include dir to include location
          #rest of files to home directory
 }
-undoCredateUnzipDirectory
+undoCreateUnzipDirectory
 #at this point all zip files have been extracted in the CxxTest folder - 10/21/13
 
 

@@ -1,7 +1,7 @@
 ﻿#Joseph Widrig and David McPherson
 #
 #TITLE
-#[System.Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem')
+
 
 Function moveZipFile()
 {
@@ -23,23 +23,30 @@ Function moveZipFile()
 }
 
 
-
-#TO ADD: ask whether CxxTest dir exists and then decide whether to do this function
+#Purpose:
+#tests to see if working directory exists. IF doesn't then makes it. Moves into working directory, creates (if doesn't exist) an extraction directory.
 Function createUnzipDirectory()
 {
     #$workingDir = "~\cxx_test"
+    echo "Moving to home directory"
     cd ~
+    echo "Checking for working directory existence \'\\cxx_test\'"
     if(!(Test-Path .\cxx_test -PathType Container) ) #test to see if cxxt_proj -> cxx_test already exists
     {
+        echo "Directory not found."
+        echo "Creating working direcotry '~\cxx_test'"
         mkdir cxx_test
     }
     #move to working directory (can be changed)
+    echo "Moving to working direcotry"
     cd ~\cxx_test
+    echo "Checking for extraction directory '\CxxTest'"
     if(!(Test-Path .\CxxTest -PathType Container) )
     {
+        echo "Extraction directory not found. Creating directory '~\cxx_test\CxxTest'"
         mkdir CxxTest
     }
-    #[System.IO.Compression.ZipFile]::ExtractToDirectory('~\cxxt_proj\cxxtest-4.3.zip', '~\cxxt_proj\CxxTest')
+   
 }
 
 Function Get-FileName($initialDirectory)
@@ -63,56 +70,44 @@ Function Get-FileName($initialDirectory)
     {
         return "Cancel"
     }
- 
- 
- #$initialDirectory = $downloads
-
- #write-output $initialDirectory
-
- #$OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
- #$OpenFileDialog.InitialDirectory = $downloads
- #$OpenFileDialog.filter = "All files (*.*)| *.*"
- #$OpenFileDialog.ShowDialog() | Out-Null
- #$OpenFileDialog.filename
-} #end function Get-FileName
+}
 
 
 
 #changed from maybeUnzip
 Function unzip()
 {
-    ls
+
     #unzips all compressed files in the directory
     $shell=new-object -com shell.application #gets a shell object
-    $CurrentLocation=get-location
     #target destination
     cd ~\cxx_test\CxxTest
     $cxxtestdir=Get-Location
-    #changed '=$currentLocation.path' to '$cxxtestdir'
     $CurrentPath=$cxxtestdir.path
+    #getting namespace object for later copying
     $Location=$shell.namespace($CurrentPath)
     $ZipFiles = get-childitem *.zip
     $ZipFiles.count | out-default
-    #define $zipfolder ???
-    $ZipFolder=$cxxtestdir
     foreach ($ZipFile in $ZipFiles)
     {
         echo "unzipping:"
         $ZipFile.fullname | out-default
         $ZipFolder = $shell.namespace($ZipFile.fullname)
         #error returned from this line
-        #(void) changed '$ZipFolder' to '$CurrentLocation'
+        
         $location.Copyhere($ZipFolder.items())
         
     }
-    echo "The cxxtest files have been extracted to cxxtest 4.3"
+    echo "The cxxtest files have been extracted"
 }
 
 Function undoCreateUnzipDirectory
 {
+    echo "removing temporary files"
     cd ~\cxx_test #move into working directory
     del -r *
     cd ..
+    echo "removing temporary directories"
     Remove-item cxx_test
 
 }
@@ -120,17 +115,14 @@ Function undoCreateUnzipDirectory
 Function moveUnzippedFiles()
 {
     $Stem = 'C:\Program Files (x86)\'
+    $cxxdir = '\VC\include\cxxtest'
     $Directories = Get-ChildItem $Stem -Filter 'Microsoft Visual Studio*' -Name
     $DirectoryCount= (Get-ChildItem $Stem -Filter 'Microsoft Visual Studio*').Count
     Sort-Object $Directories
-    echo $Directories
-    $cxxdir = '\VC\include\cxxtest'
-    $fullpath = $Directories[0]
-    if( $DirectoryCount -gt 1 ) #prompt user
+    $fullpath = $Directories[0] #if only 1 MSVS version installed, use that one
+    if( $DirectoryCount -gt 1 ) #else prompt user to choose which one
     {
         echo "Multiple MSVS Versions detected."
-        
-        echo $fullpath
         $i = 1
         foreach( $Directory in $Directories )
         {
@@ -145,21 +137,22 @@ Function moveUnzippedFiles()
         $fullpath = $directories[$which-1]
     }
     $fullpath = $Stem + $fullpath + $cxxdir
-    echo $fullpath
+    
 
     #change to reflect choice by $fullpath
     if(!(Test-Path $fullpath -PathType Container) ) #test to see if 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' already exists
     {
-        echo "cxxtest Directory not found in Visual Studio, making directory"
+        echo "CxxTest Directory not found in Visual Studio, making directory"
         New-Item $fullpath -ItemType Directory
     }
-    echo "Copying items to new directory"
-    Copy-Item cxxtest-4.3\cxxtest\* 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest'
+    echo "Copying CxxTest to MSVS include directory"
+    Copy-Item cxxtest-4.3\cxxtest\* $fullpath
+    echo "Copying CxxTest files to home directory"
     if(!(Test-Path ~\cxxtest -PathType Container) ) #test to see if 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\cxxtest' already exists
     {
         New-Item ~\cxxtest -ItemType Directory
     }
-    Copy-Item cxxtest-4.3 ~\cxxtest -Recurse
+    Copy-Item cxxtest-4.3 ~\cxxtest -Recurse -Force 
 }
 
 #MAIN
@@ -168,19 +161,7 @@ if ( moveZipFile )
 { 
     unzip
     moveUnzippedFiles
-    #move files to correct location
-         #include dir to include location
-         #rest of files to home directory
+ 
 }
 undoCreateUnzipDirectory
-#at this point all zip files have been extracted in the CxxTest folder - 10/21/13
-
-
-
-#~\cxxt_proj\CxxTest\cxxtest-4.3   [\cxxtest] <--- must be moved to C:\Program Files (x86)\MSVS 11.0\VC\include
-#                                                                or C:\Program Files\Microsoft SDKs\Windows\v*.*\Include\cxxtest
-#  <using microsoft
-#  investigate cygwin and mingw
-# ADD IN echo(s) OR Write-(s)
-
 # 1/7/14 - This program must be run in a 'run as administrator' powershell window.
